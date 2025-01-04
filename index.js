@@ -18,13 +18,35 @@ function askQuestion(query) {
 	return new Promise(resolve => rl.question(query, resolve));
 }
 const getList = async () => {
-	const url = "https://api.mianshiya.com/api/question_bank/list/page/vo";
-	const params = { current: 1, pageSize: "127", tagList: ["前端"] };
-	const { code, data } = (await axios.post(url, params)).data;
-	if (code === 0) {
-		return data.records;
-	} else {
-		console.log("请求失败", data);
+	try {
+		const url = "https://api.mianshiya.com/api/question_bank/list/page/vo";
+		const params = { current: 1, pageSize: "127", tagList: ["前端"] };
+		
+		// 添加请求头和其他配置
+		const config = {
+			headers: {
+				'Content-Type': 'application/json',
+				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+			},
+			// 允许自动跟随重定向
+			maxRedirects: 5,
+			// 验证SSL证书
+			httpsAgent: new (require('https').Agent)({  
+				rejectUnauthorized: false
+			})
+		};
+
+		const response = await axios.post(url, params, config);
+		const { code, data } = response.data;
+		
+		if (code === 0) {
+			return data.records;
+		} else {
+			console.log("请求失败", data);
+			return [];
+		}
+	} catch (error) {
+		console.error("获取题目列表失败:", error.message);
 		return [];
 	}
 };
